@@ -829,9 +829,12 @@ def instanttensor_weights_iterator(
             "Please install instanttensor via `pip install instanttensor`"
         ) from e
 
+    if not current_platform.is_cuda():
+        raise ValueError("InstantTensor requires NVIDIA GPUs")
+
     world_group = get_world_group()
     process_group = world_group.device_group if world_group.world_size > 1 else None
-    device = torch.cuda.current_device()
+    device = current_platform.current_device()
 
     enable_tqdm = (
         not torch.distributed.is_initialized() or torch.distributed.get_rank() == 0

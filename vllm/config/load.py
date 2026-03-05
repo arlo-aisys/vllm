@@ -34,6 +34,9 @@ class LoadConfig:
     - "instanttensor" will load the Safetensors weights using InstantTensor,
     which enables distributed loading with pipelined prefetching and fast 
     direct I/O.\n
+    - "instanttensor" will load the Safetensors weights on CUDA devices using
+    InstantTensor, which enables distributed loading with pipelined prefetching
+    and fast direct I/O.\n
     - "npcache" will load the weights in pytorch format and store a numpy cache
     to speed up the loading.\n
     - "dummy" will initialize the weights with random values, which is mainly
@@ -51,6 +54,7 @@ class LoadConfig:
     - "gguf" will load weights from GGUF format files (details specified in
     https://github.com/ggml-org/ggml/blob/master/docs/gguf.md).\n
     - "mistral" will load weights from consolidated safetensors files used by
+    Mistral models.\n
     Mistral models.\n
     - Other custom values can be supported via plugins."""
     download_dir: str | None = None
