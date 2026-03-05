@@ -33,7 +33,9 @@ def test_instanttensor_model_loader():
         hf_safetensors_tensors = {}
 
         for name, tensor in instanttensor_weights_iterator(safetensors, True):
-            instanttensor_tensors[name] = tensor
+            # Copy the tensor immediately as it is a reference to the internel
+            # buffer of instanttensor.
+            instanttensor_tensors[name] = tensor.to("cpu")
 
         for name, tensor in safetensors_weights_iterator(safetensors, True):
             hf_safetensors_tensors[name] = tensor
@@ -41,7 +43,6 @@ def test_instanttensor_model_loader():
         assert len(instanttensor_tensors) == len(hf_safetensors_tensors)
 
         for name, instanttensor_tensor in instanttensor_tensors.items():
-            instanttensor_tensor = instanttensor_tensor.to("cpu")
             assert instanttensor_tensor.dtype == hf_safetensors_tensors[name].dtype
             assert instanttensor_tensor.shape == hf_safetensors_tensors[name].shape
             assert torch.all(instanttensor_tensor.eq(hf_safetensors_tensors[name]))

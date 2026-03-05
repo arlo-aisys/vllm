@@ -832,13 +832,15 @@ def instanttensor_weights_iterator(
     if not current_platform.is_cuda():
         raise ValueError("InstantTensor requires NVIDIA GPUs")
 
-    world_group = get_world_group()
-    process_group = world_group.device_group if world_group.world_size > 1 else None
-    device = current_platform.current_device()
+    try:
+        world_group = get_world_group()
+    except AssertionError:
+        # Entering here only in unit tests where the world group is not initialized.
+        process_group = None
+    else:
+        process_group = world_group.device_group if world_group.world_size > 1 else None
 
-    enable_tqdm = (
-        not torch.distributed.is_initialized() or torch.distributed.get_rank() == 0
-    )
+    device = current_platform.current_device()
 
     with instanttensor.safe_open(
         hf_weights_files, framework="pt", device=device, process_group=process_group
@@ -846,10 +848,11 @@ def instanttensor_weights_iterator(
         yield from tqdm(
             f.tensors(),
             desc="Loading safetensors using InstantTensor loader",
-            disable=not enable_tqdm,
+            disable=not enable_tqdm(use_tqdm_on_load),
             bar_format=_BAR_FORMAT,
             position=tqdm._get_free_pos(),
             total=len(f.keys()),
+            mininterval=1.0,
         )
 
 
